@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ══ PRESENTATION SPLASH SCREEN ══ -->
+<div id="splashScreen">
+    <style>
+        .splash-icon { font-size: 4rem; color: #1db954; animation: floatY 3s ease-in-out infinite; margin-bottom: -8px; }
+        .splash-logo { font-family: 'Syne', sans-serif; font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 800; color: #ffffff; letter-spacing: -2px; animation: fadeInUp 0.5s ease 0.1s both; }
+        .splash-tagline { font-size: 0.95rem; color: #a7a7a7; letter-spacing: 2px; text-transform: uppercase; animation: fadeInUp 0.5s ease 0.2s both; margin-bottom: 8px; }
+        .splash-divider { width: 40px; height: 2px; background: #1db954; border-radius: 2px; margin: 0 auto; animation: fadeInUp 0.5s ease 0.25s both; }
+        .splash-auth-box { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; animation: fadeInUp 0.5s ease 0.35s both; }
+        .splash-btn-green { padding: 15px 0; border-radius: 50px; border: none; background: #1db954; color: #000; font-weight: 700; font-size: 0.95rem; cursor: pointer; font-family: inherit; letter-spacing: 0.5px; width: 100%; transition: all 0.2s; text-transform: uppercase; }
+        .splash-btn-green:hover { background: #1ed760; transform: scale(1.02); }
+        .splash-btn-outline { padding: 14px 0; border-radius: 50px; border: 1.5px solid #727272; background: transparent; color: #ffffff; font-weight: 700; font-size: 0.95rem; cursor: pointer; font-family: inherit; letter-spacing: 0.5px; width: 100%; transition: all 0.2s; text-transform: uppercase; }
+        .splash-btn-outline:hover { border-color: #ffffff; transform: scale(1.02); }
+        .splash-divider-text { display: flex; align-items: center; gap: 10px; color: #727272; font-size: 0.75rem; letter-spacing: 1px; }
+        .splash-divider-text::before, .splash-divider-text::after { content: ''; flex: 1; height: 1px; background: #333; }
+        .splash-footer { font-size: 0.72rem; color: #535353; animation: fadeInUp 0.5s ease 0.5s both; text-align: center; }
+        .splash-footer a { color: #a7a7a7; cursor: pointer; }
+
+        /* Sign In form overlay */
+        #signInForm, #signUpForm {
+            display: none; flex-direction: column; gap: 14px;
+            width: 100%; max-width: 340px; animation: fadeInUp 0.3s ease;
+        }
+        #signInForm.active, #signUpForm.active { display: flex; }
+        .auth-title { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: #fff; text-align: center; margin-bottom: 4px; }
+        .auth-field { display: flex; flex-direction: column; gap: 5px; }
+        .auth-field label { font-size: 0.75rem; font-weight: 600; color: #a7a7a7; letter-spacing: 0.5px; }
+        .auth-input { background: #2a2a2a; border: 1.5px solid #333; border-radius: 6px; padding: 12px 14px; color: #fff; font-size: 0.9rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
+        .auth-input:focus { border-color: #1db954; }
+        .auth-input.error { border-color: #e74c3c; }
+        .auth-err { font-size: 0.72rem; color: #e74c3c; display: none; }
+        .auth-err.show { display: block; }
+        .auth-back { background: none; border: none; color: #a7a7a7; font-size: 0.8rem; cursor: pointer; font-family: inherit; text-align: center; margin-top: -4px; }
+        .auth-back:hover { color: #fff; }
+        .auth-switch { font-size: 0.8rem; color: #a7a7a7; text-align: center; }
+        .auth-switch span { color: #1db954; cursor: pointer; font-weight: 600; }
+        .auth-switch span:hover { text-decoration: underline; }
+    </style>
+
+    <!-- Main landing -->
+    <div id="splashMain" style="display:flex;flex-direction:column;align-items:center;gap:24px;width:100%;max-width:340px;padding:0 20px">
+        <i class="fa-brands fa-spotify splash-icon"></i>
+        <div style="text-align:center">
+            <div class="splash-logo">Spotify</div>
+            <div class="splash-tagline">Millions of songs. Free.</div>
+        </div>
+        <div class="splash-divider"></div>
+        <div class="splash-auth-box">
+            <button class="splash-btn-green" onclick="showSignUp()"><i class="fa-solid fa-user-plus" style="margin-right:8px"></i>Sign up free</button>
+            <div class="splash-divider-text">or</div>
+            <button class="splash-btn-outline" onclick="showSignIn()"><i class="fa-solid fa-right-to-bracket" style="margin-right:8px"></i>Log in</button>
+        </div>
+        <div class="splash-footer">By continuing, you agree to Spotify's <a>Terms of Service</a> and <a>Privacy Policy</a>.<br><br>Capstone Project — Nandhini</div>
+    </div>
+
+    <!-- Sign Up Form -->
+    <div id="signUpForm" style="padding:0 20px;align-items:center">
+        <div class="auth-title">Sign up for free</div>
+        <div class="auth-field" style="width:100%">
+            <label>Email address</label>
+            <input class="auth-input" id="su-email" type="email" placeholder="name@domain.com" oninput="clearAuthErr('su-email')">
+            <span class="auth-err" id="su-email-err">Please enter a valid email.</span>
+        </div>
+        <div class="auth-field" style="width:100%">
+            <label>Full name</label>
+            <input class="auth-input" id="su-name" type="text" placeholder="Your name" oninput="clearAuthErr('su-name')">
+            <span class="auth-err" id="su-name-err">Name must be at least 2 characters.</span>
+        </div>
+        <div class="auth-field" style="width:100%">
+            <label>Password</label>
+            <input class="auth-input" id="su-pass" type="password" placeholder="Create a password" oninput="clearAuthErr('su-pass')">
+            <span class="auth-err" id="su-pass-err">Password must be at least 8 characters.</span>
+        </div>
+        <button class="splash-btn-green" onclick="handleSignUp()">Create Account</button>
+        <div class="auth-switch">Already have an account? <span onclick="showSignIn()">Log in</span></div>
+        <button class="auth-back" onclick="showMain()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+    </div>
+
+    <!-- Sign In Form -->
+    <div id="signInForm" style="padding:0 20px;align-items:center">
+        <div class="auth-title">Log in</div>
+        <div class="auth-field" style="width:100%">
+            <label>Email address</label>
+            <input class="auth-input" id="si-email" type="email" placeholder="name@domain.com" oninput="clearAuthErr('si-email')">
+            <span class="auth-err" id="si-email-err">Please enter a valid email.</span>
+        </div>
+        <div class="auth-field" style="width:100%">
+            <label>Password</label>
+            <input class="auth-input" id="si-pass" type="password" placeholder="Your password" oninput="clearAuthErr('si-pass')">
+            <span class="auth-err" id="si-pass-err">Password must be at least 8 characters.</span>
+        </div>
+        <button class="splash-btn-green" onclick="handleSignIn()">Log In</button>
+        <div class="auth-switch">Don't have an account? <span onclick="showSignUp()">Sign up free</span></div>
+        <button class="auth-back" onclick="showMain()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+    </div>
+</div>
+
+<!-- TOP NAV -->
+<div class="top-nav">
+    <div class="logo"><i class="fa-brands fa-spotify"></i> spotify</div>
+    <div class="nav-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Search songs, artists, moods…">
+    </div>
+    <div class="nav-right">
+        <div class="ai-badge" onclick="openDJ()">
+            <span class="dot"></span>
+            AI DJ
+        </div>
+        <div class="ai-badge" onclick="switchRightTab('chat')" style="border-color: #b3b3b355; color: #b3b3b3;">
+            <i class="fa-solid fa-wand-magic-sparkles" style="font-size:0.7rem"></i>
+            Ask AI
+        </div>
+        <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+            <i class="fa-solid fa-moon"></i>
+        </div>
+        <div class="nav-avatar">N</div>
+    </div>
+</div>
+
+<!-- APP BODY -->
+<div class="app-body">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <!-- AI Mood Detector -->
+        <div class="mood-section">
+            <div class="mood-label"><i class="fa-solid fa-brain" style="font-size:0.75rem"></i> AI Mood Match</div>
+            <div class="mood-chips">
+                <button class="mood-chip active" onclick="setMood(this,'chill')"><i class="fa-solid fa-wind"></i> Chill</button>
+                <button class="mood-chip" onclick="setMood(this,'hype')"><i class="fa-solid fa-bolt"></i> Hype</button>
+                <button class="mood-chip" onclick="setMood(this,'focus')"><i class="fa-solid fa-crosshairs"></i> Focus</button>
+                <button class="mood-chip" onclick="setMood(this,'sad')"><i class="fa-solid fa-cloud-rain"></i> Sad</button>
+                <button class="mood-chip" onclick="setMood(this,'love')"><i class="fa-solid fa-heart"></i> Love</button>
+            </div>
+        </div>
+
+        <!-- Sleep Timer -->
+        <div class="sleep-section">
+            <div class="sleep-label">
+                <span><i class="fa-solid fa-clock"></i> Sleep Timer</span>
+                <span class="sleep-timer-display" id="sleepDisplay">Off</span>
+            </div>
+            <div class="sleep-btns">
+                <button class="sleep-btn" onclick="setSleepTimer(this, 15)">15m</button>
+                <button class="sleep-btn" onclick="setSleepTimer(this, 30)">30m</button>
+                <button class="sleep-btn" onclick="setSleepTimer(this, 60)">1h</button>
+                <button class="sleep-btn" onclick="setSleepTimer(this, 0)">Off</button>
+            </div>
+        </div>
+
+        <div class="sidebar-header">
+            <h3>Library</h3>
+            <button class="sidebar-add" onclick="openCreatePlaylist()" title="Create playlist"><i class="fa-solid fa-plus"></i></button>
+        </div>
+
+        <div class="sidebar-scroll">
+            <!-- Folder -->
+            <div class="lib-item" id="memoriesFolder" onclick="toggleFolder()">
+                <div class="folder-icon-box"><i class="fa-solid fa-folder"></i></div>
+                <div class="lib-item-info"><h4>Memories</h4><p>4 playlists</p></div>
+                <i class="fa-solid fa-chevron-down folder-arrow" id="folderArrow"></i>
+            </div>
+            <div class="folder-dropdown" id="folderDropdown">
+                <div class="dropdown-pl" onclick="openPlaylist('melodyMix')">
+                    <img src="https://i.pinimg.com/736x/43/d7/12/43d712e409169507c7db1844ca2e8154.jpg">
+                    <div class="dropdown-pl-info"><h4>2026</h4><p>Playlist</p></div>
+                </div>
+                <div class="dropdown-pl" onclick="openPlaylist('vintageVibes')">
+                    <img src="https://i.pinimg.com/736x/ed/2f/90/ed2f90b707a1a0153c1898f1ee5274ae.jpg">
+                    <div class="dropdown-pl-info"><h4>2025</h4><p>Playlist</p></div>
+                </div>
+                <div class="dropdown-pl" onclick="openPlaylist('devotional')">
+                    <img src="https://i.pinimg.com/1200x/ad/bd/d9/adbdd9506ee4dbf03c010df8a63523b7.jpg">
+                    <div class="dropdown-pl-info"><h4>2024</h4><p>Playlist</p></div>
+                </div>
+                <div class="dropdown-pl" onclick="openPlaylist('suggested')">
+                    <img src="https://i.pinimg.com/736x/6b/c7/da/6bc7daacabc0f5c1e947729f3699e0c1.jpg">
+                    <div class="dropdown-pl-info"><h4>2023</h4><p>Playlist</p></div>
+                </div>
+            </div>
+
+            <div class="lib-item" onclick="openPlaylist('melodyMix')">
+                <img src="https://i.pinimg.com/736x/87/48/e8/8748e811089d6c46448ec0b87d75ecc9.jpg">
+                <div class="lib-item-info"><h4>Melody Mix</h4><p>Playlist • Recommended</p></div>
+            </div>
+            <div class="lib-item" onclick="openPlaylist('vintageVibes')">
+                <img src="https://i.pinimg.com/736x/21/9d/8c/219d8cb4d95974f1d00608a734dbe0ee.jpg">
+                <div class="lib-item-info"><h4>Vintage Vibes</h4><p>Playlist • Recommended</p></div>
+            </div>
+            <div class="lib-item" onclick="openPlaylist('devotional')">
+                <img src="https://i.pinimg.com/736x/1d/cf/6f/1dcf6fb79a87bf3b42224861b97a5e5a.jpg">
+                <div class="lib-item-info"><h4>Devotional</h4><p>Playlist • Recommended</p></div>
+            </div>
+            <div class="lib-item" onclick="openPlaylist('suggested')">
+                <img src="https://i.pinimg.com/736x/3a/c2/94/3ac294153133899bc51123b13ee322fc.jpg">
+                <div class="lib-item-info"><h4>Suggested</h4><p>Playlist • Recommended</p></div>
+            </div>
+
+            <!-- Dynamic created playlists -->
+            <div id="createdPlaylists"></div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- AI Banner -->
+        <div class="ai-banner">
+            <div class="ai-banner-icon"><i class="fa-solid fa-headphones" style="font-size:2.2rem"></i></div>
+            <div class="ai-banner-text">
+                <h2>Your AI-Powered Soundtrack</h2>
+                <p>Ask me anything — "play something calm for studying" or "surprise me with Tamil hits"</p>
+            </div>
+            <button class="ai-banner-btn" onclick="switchRightTab('chat')">Chat with AI</button>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="section-header" style="margin-bottom:10px">
+            <span class="section-title">Your Stats</span>
+            <span class="section-sub" style="font-size:0.72rem">This week</span>
+        </div>
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num" style="color:var(--accent)" id="statMinutes">0</div>
+                <div class="stat-label">Minutes Listened</div>
+                <div class="stat-trend up" id="statMinTrend"><i class="fa-solid fa-arrow-up" style="font-size:0.6rem"></i> 0 min today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color:var(--accent2)" id="statSongs">0</div>
+                <div class="stat-label">Songs Played</div>
+                <div class="stat-trend up"><i class="fa-solid fa-arrow-up" style="font-size:0.6rem"></i> Session count</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color:var(--accent3)" id="statLiked">0</div>
+                <div class="stat-label">Liked Songs</div>
+                <div class="stat-trend up"><i class="fa-solid fa-heart" style="font-size:0.6rem"></i> Favorites</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color:#ffffff" id="statStreak">1</div>
+                <div class="stat-label">Day Streak <i class="fa-solid fa-fire" style="font-size:0.85rem;color:var(--accent2)"></i></div>
+                <div class="stat-trend up"><i class="fa-solid fa-fire" style="font-size:0.6rem"></i> Keep it up!</div>
+            </div>
+        </div>
+
+        <!-- Quick Picks -->
+        <div class="section-header">
+            <span class="section-title">Quick picks</span>
+            <span class="section-sub" onclick="buildGrids()">↺ Refresh</span>
+        </div>
+        <div class="quick-grid" id="quickGrid"></div>
+
+        <!-- AI Feature Cards -->
+        <div class="section-header">
+            <span class="section-title">AI Features</span>
+        </div>
+        <div class="ai-features-row">
+            <div class="ai-feat-card green" onclick="openDJ()">
+                <div class="ai-feat-icon"><i class="fa-solid fa-sliders" style="font-size:1.5rem"></i></div>
+                <h4>AI DJ Mode</h4>
+                <p>Let AI curate an endless, personalized radio session based on your taste.</p>
+            </div>
+            <div class="ai-feat-card purple" onclick="switchRightTab('lyrics')">
+                <div class="ai-feat-icon"><i class="fa-solid fa-align-left" style="font-size:1.5rem"></i></div>
+                <h4>Smart Lyrics</h4>
+                <p>Real-time AI-synced lyrics with translation and line-by-line meaning.</p>
+            </div>
+            <div class="ai-feat-card pink" onclick="switchRightTab('chat')">
+                <div class="ai-feat-icon"><i class="fa-solid fa-comment-dots" style="font-size:1.5rem"></i></div>
+                <h4>Music Concierge</h4>
+                <p>Describe a feeling or scene — AI finds the perfect song instantly.</p>
+            </div>
+        </div>
+
+        <!-- Playlists -->
+        <div class="section-header">
+            <span class="section-title">Your playlists</span>
+            <span class="section-sub">See all</span>
+        </div>
+        <div class="cards-row" id="playlistGrid"></div>
+
+        <!-- Recommendations -->
+        <div class="section-header">
+            <span class="section-title">Made For <strong>You</strong></span>
+            <span class="section-sub">See all</span>
+        </div>
+        <div class="cards-row">
+            <div class="p-card" onclick="playSong(0)">
+                <img src="https://i.pinimg.com/736x/6d/a6/53/6da653763622f4b5b56947215f22e7fd.jpg">
+                <h4>Daily Mix 1</h4>
+                <p>Based on your listening</p>
+                <button class="p-card-play"><i class="fa-solid fa-play"></i></button>
+            </div>
+            <div class="p-card" onclick="playSong(1)">
+                <img src="https://i.pinimg.com/736x/f0/6c/dd/f06cdd3f8c55d392cc0a93df36625466.jpg">
+                <h4>Discover Weekly</h4>
+                <p>Your weekly mixtape</p>
+                <button class="p-card-play"><i class="fa-solid fa-play"></i></button>
+            </div>
+            <div class="p-card" onclick="playSong(3)">
+                <img src="https://i.pinimg.com/736x/a5/18/0c/a5180cac4a26740cce2721776d448534.jpg">
+                <h4>Tamil Throwbacks</h4>
+                <p>AI-curated for you</p>
+                <button class="p-card-play"><i class="fa-solid fa-play"></i></button>
+            </div>
+            <div class="p-card" onclick="playSong(4)">
+                <img src="https://i.pinimg.com/736x/7c/62/e8/7c62e8e586490613f9b4ad16397abd4a.jpg">
+                <h4>Mood Radio</h4>
+                <p>Right now: Chill</p>
+                <button class="p-card-play"><i class="fa-solid fa-play"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="right-sidebar">
+        <div class="right-tabs">
+            <div class="right-tab active" id="tab-nowplaying" onclick="switchRightTab('nowplaying')">Now Playing</div>
+            <div class="right-tab" id="tab-lyrics" onclick="switchRightTab('lyrics')">Lyrics</div>
+            <div class="right-tab" id="tab-queue" onclick="switchRightTab('queue')">Queue</div>
+            <div class="right-tab" id="tab-eq" onclick="switchRightTab('eq')">EQ</div>
+            <div class="right-tab" id="tab-chat" onclick="switchRightTab('chat')">AI Chat</div>
+        </div>
+
+        <!-- Now Playing Panel -->
+        <div class="right-panel" id="panel-nowplaying">
+            <img id="npArt" class="np-art" src="https://i.pinimg.com/1200x/2c/bb/ea/2cbbea8930db13d1461a7d8ff0e9ebb6.jpg" onclick="switchRightTab('lyrics')">
+            <canvas id="canvasViz"></canvas>
+            <div class="np-info" style="margin-top:10px">
+                <h3 id="npSong">Chem Trials Over the Country club</h3>
+                <p id="npArtist">Lana Del Rey</p>
+            </div>
+            <div class="rating-row">
+                <span class="rating-label">Rate:</span>
+                <div class="stars" id="starRating">
+                    <span class="star" onclick="rateSong(1)">★</span>
+                    <span class="star" onclick="rateSong(2)">★</span>
+                    <span class="star" onclick="rateSong(3)">★</span>
+                    <span class="star" onclick="rateSong(4)">★</span>
+                    <span class="star" onclick="rateSong(5)">★</span>
+                </div>
+            </div>
+            <div class="np-actions">
+                <button class="np-like" id="npLike" onclick="toggleLike()"><i class="fa-solid fa-heart"></i></button>
+                <button class="np-tag" onclick="addToQueue()">+ Queue</button>
+                <button class="np-tag" onclick="shareCurrentSong()">Share</button>
+                <button class="np-tag" onclick="openPlaylist('suggested')">Add to Playlist</button>
+            </div>
+            <!-- Speed Controls -->
+            <div class="speed-row" style="margin-top:12px">
+                <span class="speed-label">Speed:</span>
+                <button class="speed-btn" onclick="setSpeed(this,0.75)">0.75×</button>
+                <button class="speed-btn active" id="speedNormal" onclick="setSpeed(this,1)">1×</button>
+                <button class="speed-btn" onclick="setSpeed(this,1.25)">1.25×</button>
+                <button class="speed-btn" onclick="setSpeed(this,1.5)">1.5×</button>
+            </div>
+            <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border)">
+                <div class="lyrics-header"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Insight</div>
+                <p id="aiInsight" style="font-size:0.82rem;color:var(--muted);line-height:1.6">
+                    Ask AI about this song — its meaning, the artist's story, similar tracks, or what mood it fits best.
+                </p>
+            </div>
+        </div>
+
+        <!-- Lyrics Panel -->
+        <div class="right-panel hidden" id="panel-lyrics">
+            <div class="lyrics-header"><i class="fa-solid fa-music"></i> Smart Lyrics · AI-synced</div>
+            <div class="lyrics-content" id="lyricsContent">Loading lyrics…</div>
+        </div>
+
+        <!-- Queue Panel -->
+        <div class="right-panel hidden" id="panel-queue">
+            <div class="lyrics-header"><i class="fa-solid fa-list"></i> Up Next</div>
+            <div id="queueList"></div>
+        </div>
+
+        <!-- EQ Panel -->
+        <div class="right-panel hidden" id="panel-eq">
+            <div class="eq-panel-inner">
+                <div class="eq-title">Equalizer</div>
+                <div class="eq-presets">
+                    <button class="eq-preset active" onclick="applyEQPreset(this,'flat')">Flat</button>
+                    <button class="eq-preset" onclick="applyEQPreset(this,'bass')">Bass Boost</button>
+                    <button class="eq-preset" onclick="applyEQPreset(this,'treble')">Treble</button>
+                    <button class="eq-preset" onclick="applyEQPreset(this,'vocal')">Vocal</button>
+                    <button class="eq-preset" onclick="applyEQPreset(this,'lofi')">Lo-Fi</button>
+                </div>
+                <div class="eq-sliders" id="eqSliders">
+                    <!-- built by JS -->
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:0 6px">
+                    <span style="font-size:0.6rem;color:var(--muted)">60Hz</span>
+                    <span style="font-size:0.6rem;color:var(--muted)">250Hz</span>
+                    <span style="font-size:0.6rem;color:var(--muted)">1kHz</span>
+                    <span style="font-size:0.6rem;color:var(--muted)">4kHz</span>
+                    <span style="font-size:0.6rem;color:var(--muted)">16kHz</span>
+                </div>
+                <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border)">
+                    <div class="eq-title" style="margin-bottom:10px">Audio Effects</div>
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                        <label style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;cursor:pointer">
+                            <span>Reverb</span>
+                            <input type="range" min="0" max="100" value="0" id="reverbSlider" style="width:100px;accent-color:var(--accent2)" oninput="showToast('Reverb: '+this.value+'%')">
+                        </label>
+                        <label style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;cursor:pointer">
+                            <span>Stereo Width</span>
+                            <input type="range" min="0" max="100" value="50" style="width:100px;accent-color:var(--accent2)" oninput="showToast('Stereo: '+this.value+'%')">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Chat Panel -->
+        <div class="right-panel hidden" id="panel-chat">
+            <div class="chat-msgs" id="chatMsgs">
+                <div class="chat-bubble ai">
+                    <div class="chat-ai-name"><i class="fa-solid fa-robot" style="font-size:0.65rem"></i> Spotify AI</div>
+                    Hey! I'm your music AI. Ask me to find songs by mood, vibe, language, or situation. I can also tell you about any artist or song. ♪
+                </div>
+            </div>
+            <div class="chat-suggestions" id="chatSugs">
+                <button class="chat-sug" onclick="sendSuggestion(this)">Something chill for studying</button>
+                <button class="chat-sug" onclick="sendSuggestion(this)">Tamil hits from 2020s</button>
+                <button class="chat-sug" onclick="sendSuggestion(this)">Tell me about this song</button>
+                <button class="chat-sug" onclick="sendSuggestion(this)">Upbeat workout music</button>
+            </div>
+            <div class="chat-input-row">
+                <input class="chat-input" id="chatInput" placeholder="Ask anything about music…" onkeydown="if(event.key==='Enter')sendChat()">
+                <button class="chat-send" id="chatSendBtn" onclick="sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PLAYER BAR -->
+<div class="player">
+    <div class="pl-left">
+        <img id="playerImg" src="https://i.pinimg.com/1200x/2c/bb/ea/2cbbea8930db13d1461a7d8ff0e9ebb6.jpg" onclick="switchRightTab('nowplaying')">
+        <div class="pl-song">
+            <h4 id="playerSong">Chem Trials Over the Country club</h4>
+            <p id="playerArtist">Lana Del Rey</p>
+        </div>
+        <button class="pl-like" id="playerLike" onclick="toggleLike()"><i class="fa-solid fa-heart"></i></button>
+        <div class="visualizer" id="visualizer">
+            <div class="viz-bar"></div><div class="viz-bar"></div><div class="viz-bar"></div>
+            <div class="viz-bar"></div><div class="viz-bar"></div>
+        </div>
+    </div>
+    <div class="pl-center">
+        <div class="pl-controls">
+            <button class="pl-btn" id="shuffleBtn" onclick="toggleShuffle()" title="Shuffle"><i class="fa-solid fa-shuffle"></i></button>
+            <button class="pl-btn" id="prevBtn"><i class="fa-solid fa-backward-step"></i></button>
+            <button class="pl-play" id="playBtn"><i class="fa-solid fa-play"></i></button>
+            <button class="pl-btn" id="nextBtn"><i class="fa-solid fa-forward-step"></i></button>
+            <button class="pl-btn" id="repeatBtn" onclick="toggleRepeat()" title="Repeat"><i class="fa-solid fa-repeat"></i></button>
+            <div class="ai-mode-pill" id="aiModePill" style="display:none">AI Mix</div>
+        </div>
+        <div class="pl-progress">
+            <span class="pl-time" id="currentTime">0:00</span>
+            <div class="progress-track" id="progressBar">
+                <div class="progress-fill-bar" id="progressFill"></div>
+                <div class="progress-thumb" id="progressThumb"></div>
+            </div>
+            <span class="pl-time right" id="totalTime">0:00</span>
+        </div>
+    </div>
+    <div class="pl-right">
+        <button class="pl-btn" title="Lyrics" onclick="switchRightTab('lyrics')"><i class="fa-solid fa-align-left"></i></button>
+        <button class="pl-btn" title="Queue" onclick="switchRightTab('queue')"><i class="fa-solid fa-list"></i></button>
+        <button class="pl-btn" title="EQ" onclick="switchRightTab('eq')"><i class="fa-solid fa-sliders"></i></button>
+        <button class="pl-btn" title="Volume" id="muteBtn" onclick="toggleMute()"><i class="fa-solid fa-volume-high"></i></button>
+        <div class="vol-track" id="volumeBar"><div class="vol-fill" id="volumeFill"></div></div>
+        <button class="pl-btn" title="AI Chat" onclick="switchRightTab('chat')"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent2)"></i></button>
+    </div>
+</div>
+
+<!-- PLAYLIST MODAL -->
+<div class="overlay" id="playlistModal">
+    <div class="modal">
+        <div class="modal-head">
+            <img id="modalImg" src="">
+            <div><h2 id="modalTitle"></h2><p id="modalSub"></p></div>
+            <button class="modal-close" onclick="closeModal('playlistModal')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="modalSongs"></div>
+    </div>
+</div>
+
+<!-- AI DJ MODAL -->
+<div class="overlay" id="djModal">
+    <div class="dj-modal">
+        <button class="modal-close" onclick="closeModal('djModal')" style="position:absolute;top:16px;right:16px"><i class="fa-solid fa-xmark"></i></button>
+        <div class="dj-orb"><i class="fa-solid fa-sliders" style="font-size:2rem"></i></div>
+        <h2>AI DJ Session</h2>
+        <p class="sub">Choose your vibe and let the AI spin a personalized, never-ending session just for you.</p>
+        <div class="dj-options">
+            <div class="dj-option selected" onclick="selectDJ(this)"><div class="dj-option-icon"><i class="fa-solid fa-wind"></i></div><h4>Chill Out</h4><p>Lo-fi, soft vocals</p></div>
+            <div class="dj-option" onclick="selectDJ(this)"><div class="dj-option-icon"><i class="fa-solid fa-bolt"></i></div><h4>Hype Mode</h4><p>Energy, beats, bass</p></div>
+            <div class="dj-option" onclick="selectDJ(this)"><div class="dj-option-icon"><i class="fa-solid fa-crosshairs"></i></div><h4>Deep Focus</h4><p>Instrumental, ambient</p></div>
+            <div class="dj-option" onclick="selectDJ(this)"><div class="dj-option-icon"><i class="fa-solid fa-star"></i></div><h4>Surprise Me</h4><p>AI picks everything</p></div>
+        </div>
+        <button class="dj-start" onclick="startDJ()">Start AI DJ Session</button>
+        <button class="dj-cancel" onclick="closeModal('djModal')">Maybe later</button>
+    </div>
+</div>
+
+<!-- CREATE PLAYLIST MODAL -->
+<div class="overlay" id="createPlaylistModal">
+    <div class="create-modal">
+        <button class="modal-close" onclick="closeModal('createPlaylistModal')" style="position:absolute;top:18px;right:18px"><i class="fa-solid fa-xmark"></i></button>
+        <h2>Create Playlist</h2>
+
+        <!-- Validation Summary -->
+        <div class="validation-summary" id="valSummary">
+            <strong>Please fix the following:</strong>
+            <ul id="valList"></ul>
+        </div>
+
+        <div class="form-group">
+            <label for="plName">Playlist Name <span style="color:#e74c3c">*</span></label>
+            <input class="form-input" id="plName" placeholder="My awesome playlist…"
+                maxlength="40"
+                oninput="validateField('plName')"
+                onblur="validateField('plName')">
+            <div class="field-hint">Between 2–40 characters. No special characters.</div>
+            <div class="field-error" id="plName-error">Playlist name is required (2–40 characters).</div>
+            <span class="char-count" id="plNameCount">0/40</span>
+        </div>
+
+        <div class="form-group" style="position:relative">
+            <label for="plDesc">Description</label>
+            <textarea class="form-input form-textarea" id="plDesc" placeholder="Describe the vibe…"
+                maxlength="120"
+                oninput="validateField('plDesc')"
+                onblur="validateField('plDesc')"></textarea>
+            <div class="field-hint">Optional — max 120 characters.</div>
+            <div class="field-error" id="plDesc-error">Description must be under 120 characters.</div>
+            <span class="char-count" id="plDescCount">0/120</span>
+        </div>
+
+        <div class="form-group">
+            <label>Pick an Icon <span style="color:#e74c3c">*</span></label>
+            <div class="emoji-picker" id="emojiPicker">
+                <div class="emoji-opt selected" onclick="selectEmoji(this,'note')"><i class="fa-solid fa-music"></i></div>
+                <div class="emoji-opt" onclick="selectEmoji(this,'guitar')"><i class="fa-solid fa-guitar"></i></div>
+                <div class="emoji-opt" onclick="selectEmoji(this,'drum')"><i class="fa-solid fa-drum"></i></div>
+                <div class="emoji-opt" onclick="selectEmoji(this,'piano')"><i class="fa-solid fa-music"></i></div>
+                <div class="emoji-opt" onclick="selectEmoji(this,'mic')"><i class="fa-solid fa-microphone"></i></div>
+                <div class="emoji-opt" onclick="selectEmoji(this,'headphones')"><i class="fa-solid fa-headphones"></i></div>
+                <div class="emoji-opt" onclick="selectEmoji(this,'moon')"><i class="fa-solid fa-moon"></i></div>
+                <div class="emoji-opt" onclick="selectEmoji(this,'bolt')"><i class="fa-solid fa-bolt"></i></div>
+            </div>
+            <div class="field-error" id="emoji-error">Please select an icon for your playlist.</div>
+        </div>
+
+        <button class="form-submit" id="createBtn" onclick="createPlaylist()">
+            <span class="btn-text">Create Playlist</span>
+            <span class="btn-loader"><i class="fa-solid fa-circle-notch"></i></span>
+        </button>
+    </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav" id="mobileNav">
+    <button class="mob-nav-btn active" id="mnHome" onclick="mobileTab('home')">
+        <i class="fa-solid fa-house"></i><span>Home</span>
+    </button>
+    <button class="mob-nav-btn" id="mnSearch" onclick="mobileTab('search')">
+        <i class="fa-solid fa-magnifying-glass"></i><span>Search</span>
+    </button>
+    <button class="mob-nav-btn" id="mnLibrary" onclick="mobileTab('library')">
+        <i class="fa-solid fa-layer-group"></i><span>Library</span>
+    </button>
+    <button class="mob-nav-btn" id="mnAI" onclick="mobileTab('ai')">
+        <i class="fa-solid fa-wand-magic-sparkles"></i><span>AI</span>
+    </button>
+    <button class="mob-nav-btn" id="mnPlayer" onclick="mobileTab('player')">
+        <i class="fa-solid fa-music"></i><span>Now Playing</span>
+    </button>
+</nav>
+
+<!-- MOBILE SHEET (right panel content on mobile) -->
+<div class="mobile-sheet" id="mobileSheet">
+    <div class="sheet-handle"></div>
+    <div id="mobileSheetContent"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<audio id="audioPlayer"></audio>
+
+<script src="script.js"></script>
+</body>
+</html>
